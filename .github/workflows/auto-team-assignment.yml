@@ -1,15 +1,25 @@
+# .github/workflows/auto-team-assignment.yml
 name: Auto Team Assignment
 
 on:
-  repository_dispatch:
-    types: [repo-created]
-  create:
+  repository_created: # この行を変更
+  workflow_dispatch:  # 手動実行用に追加
+
+permissions:
+  contents: read
+  administration: write # リポジトリ管理権限を追加
 
 jobs:
   assign-teams:
-    if: github.event.ref_type == 'repository'
     runs-on: ubuntu-latest
+    # デバッグ用に条件を緩和
     steps:
+      - name: Debug Info
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Organization: ${{ github.repository_owner }}"
+
       - name: Add teams to repository
         uses: actions/github-script@v6
         with:
@@ -19,12 +29,18 @@ jobs:
               { 
                 name: 'InternalTeam',
                 permission: 'push'
+              },
+              { 
+                name: 'SpecificTeam',
+                permission: 'pull'
               }
             ];
             
-            for (const team of teamsConfig) {
-              try {
-                console.log(`Adding ${team.name} to ${context.repo.name}...`);
+            try {
+              console.log('Starting team assignment process...');
+              
+              for (const team of teamsConfig) {
+                console.log(`Processing team: ${team.name}`);
                 
                 await github.rest.teams.addOrUpdateRepoPermissionsInOrg({
                   org: context.repo.owner,
@@ -35,7 +51,8 @@ jobs:
                 });
                 
                 console.log(`Successfully added ${team.name} to ${context.repo.name}`);
-              } catch (error) {
-                console.error(`Error adding ${team.name}: ${error.message}`);
               }
+            } catch (error) {
+              console.error('Error occurred:', error.message);
+              core.setFailed(error.message);
             }

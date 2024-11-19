@@ -2,8 +2,8 @@
 name: Debug Repository Creation
 
 on:
-  create
-  workflow_dispatch
+  create:
+  workflow_dispatch:
 
 jobs:
   debug-info:

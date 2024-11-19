@@ -1,67 +1,17 @@
-# .github/workflows/auto-team-assignment.yml
-name: Auto Team Assignment
+# .github/workflows/debug-repository-creation.yml
+name: Debug Repository Creation
 
 on:
   create:
-  workflow_dispatch:  # 手動実行用のトリガー
-
-permissions:
-  contents: write
-  actions: write
-  checks: write
-  deployments: write
-  issues: write
-  packages: write
-  pull-requests: write
-  repository-projects: write
-  security-events: write
-  statuses: write
+  workflow_dispatch:
 
 jobs:
-  assign-teams:
-    if: github.event.ref_type == 'repository'
+  debug-info:
     runs-on: ubuntu-latest
     steps:
-      - name: Debug Info
+      - name: Output Debug Information
         run: |
-          echo "Event name: ${{ github.event_name }}"
-          echo "Event type: ${{ github.event.ref_type }}"
+          echo "Event Name: ${{ github.event_name }}"
           echo "Repository: ${{ github.repository }}"
           echo "Organization: ${{ github.repository_owner }}"
-
-      - name: Add teams to repository
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.ORG_ADMIN_TOKEN }}
-          script: |
-            const teamsConfig = [
-              { 
-                name: 'InternalTeam',
-                permission: 'push'
-              },
-              { 
-                name: 'SpecificTeam',
-                permission: 'pull'
-              }
-            ];
-            
-            try {
-              console.log('Starting team assignment process...');
-              
-              for (const team of teamsConfig) {
-                console.log(`Processing team: ${team.name}`);
-                
-                await github.rest.teams.addOrUpdateRepoPermissionsInOrg({
-                  org: context.repo.owner,
-                  team_slug: team.name,
-                  owner: context.repo.owner,
-                  repo: context.repo.name,
-                  permission: team.permission
-                });
-                
-                console.log(`Successfully added ${team.name} to ${context.repo.name}`);
-              }
-            } catch (error) {
-              console.error('Error occurred:', error.message);
-              core.setFailed(error.message);
-            }
+          echo "Event Type: ${{ github.event.ref_type }}"

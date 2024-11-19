@@ -1,0 +1,41 @@
+name: Auto Team Assignment
+
+on:
+  repository_dispatch:
+    types: [repo-created]
+  create:
+
+jobs:
+  assign-teams:
+    if: github.event.ref_type == 'repository'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add teams to repository
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.ORG_ADMIN_TOKEN }}
+          script: |
+            const teamsConfig = [
+              { 
+                name: 'InternalTeam',
+                permission: 'push'
+              }
+            ];
+            
+            for (const team of teamsConfig) {
+              try {
+                console.log(`Adding ${team.name} to ${context.repo.name}...`);
+                
+                await github.rest.teams.addOrUpdateRepoPermissionsInOrg({
+                  org: context.repo.owner,
+                  team_slug: team.name,
+                  owner: context.repo.owner,
+                  repo: context.repo.name,
+                  permission: team.permission
+                });
+                
+                console.log(`Successfully added ${team.name} to ${context.repo.name}`);
+              } catch (error) {
+                console.error(`Error adding ${team.name}: ${error.message}`);
+              }
+            }

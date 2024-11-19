@@ -2,21 +2,23 @@
 name: Auto Team Assignment
 
 on:
-  repository_created: # この行を変更
-  workflow_dispatch:  # 手動実行用に追加
+  create:
+  workflow_dispatch:  # 手動実行用のトリガー
 
 permissions:
   contents: read
-  administration: write # リポジトリ管理権限を追加
+  administration: write
 
 jobs:
   assign-teams:
+    # createイベントの中でもリポジトリ作成時のみ実行
+    if: github.event.ref_type == 'repository'
     runs-on: ubuntu-latest
-    # デバッグ用に条件を緩和
     steps:
       - name: Debug Info
         run: |
           echo "Event name: ${{ github.event_name }}"
+          echo "Event type: ${{ github.event.ref_type }}"
           echo "Repository: ${{ github.repository }}"
           echo "Organization: ${{ github.repository_owner }}"
 

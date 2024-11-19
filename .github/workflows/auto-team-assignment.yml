@@ -6,12 +6,19 @@ on:
   workflow_dispatch:  # 手動実行用のトリガー
 
 permissions:
-  contents: read
-  administration: write
+  contents: write
+  actions: write
+  checks: write
+  deployments: write
+  issues: write
+  packages: write
+  pull-requests: write
+  repository-projects: write
+  security-events: write
+  statuses: write
 
 jobs:
   assign-teams:
-    # createイベントの中でもリポジトリ作成時のみ実行
     if: github.event.ref_type == 'repository'
     runs-on: ubuntu-latest
     steps:
